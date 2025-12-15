@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+import importlib
+
 from .profiles import (
     ACTION_ALIASES,
     ACTION_OUTCOME_PRIORS,
@@ -84,6 +86,206 @@ ERA_VARIANCE_PARAMS: Dict[str, Any] = copy.deepcopy(DEFAULT_VARIANCE_PARAMS)
 DEFAULT_ROLE_FIT = {"default_strength": 0.65}
 ERA_ROLE_FIT: Dict[str, Any] = copy.deepcopy(DEFAULT_ROLE_FIT)
 
+MVP_RULES = {
+    "quarters": 4,
+    "quarter_length": 720,
+    "shot_clock": 24,
+    "orb_reset": 14,
+    "foul_out": 6,
+    "bonus_threshold": 5,
+    "fatigue_loss": {
+        "handler": 0.012,
+        "wing": 0.010,
+        "big": 0.009,
+        "transition_emphasis": 0.001,
+        "heavy_pnr": 0.001,
+    },
+    "fatigue_thresholds": {"sub_out": 0.35, "sub_in": 0.70},
+    "fatigue_targets": {
+        "starter_sec": 32 * 60,
+        "rotation_sec": 16 * 60,
+        "bench_sec": 8 * 60,
+    },
+    "fatigue_effects": {
+        "logit_delta_max": -0.25,
+        "bad_mult_max": 1.12,
+        "bad_critical": 0.25,
+        "bad_bonus": 0.08,
+        "bad_cap": 1.20,
+        "def_mult_min": 0.90,
+    },
+    "time_costs": {
+        "possession_setup": 2,
+        "PnR": 7,
+        "DHO": 6,
+        "Drive": 5,
+        "PostUp": 7,
+        "HornsSet": 6,
+        "SpotUp": 4,
+        "Cut": 4,
+        "TransitionEarly": 4,
+        "Kickout": 2,
+        "ExtraPass": 2,
+        "Reset": 4,
+    },
+}
+
+DEFENSE_META_PARAMS = {
+    "defense_meta_strength": 0.45,
+    "defense_meta_clamp_lo": 0.80,
+    "defense_meta_clamp_hi": 1.20,
+    "defense_meta_temperature": 1.10,
+    "defense_meta_floor": 0.03,
+    "defense_meta_action_mult_tables": {
+        "Drop": {
+            "PnR": 0.92,
+            "Drive": 0.95,
+            "PostUp": 1.05,
+            "HornsSet": 1.02,
+            "Cut": 1.03,
+            "Kickout": 1.02,
+            "ExtraPass": 1.02,
+        },
+        "Switch_Everything": {
+            "PnR": 0.85,
+            "DHO": 0.92,
+            "Drive": 0.95,
+            "PostUp": 1.10,
+            "Cut": 1.08,
+            "SpotUp": 1.02,
+            "HornsSet": 1.05,
+            "ExtraPass": 1.02,
+        },
+        "Hedge_ShowRecover": {
+            "PnR": 0.90,
+            "Drive": 0.92,
+            "Kickout": 1.05,
+            "ExtraPass": 1.05,
+            "SpotUp": 1.04,
+            "DHO": 0.95,
+        },
+        "Blitz_TrapPnR": {
+            "PnR": 0.82,
+            "Drive": 0.90,
+            "ExtraPass": 1.08,
+            "Kickout": 1.08,
+            "SpotUp": 1.06,
+            "Cut": 1.03,
+            "HornsSet": 1.02,
+        },
+        "ICE_SidePnR": {
+            "PnR": 0.92,
+            "Drive": 0.90,
+            "SpotUp": 1.03,
+            "Kickout": 1.05,
+            "ExtraPass": 1.03,
+            "DHO": 1.02,
+            "Cut": 1.02,
+        },
+        "Zone": {
+            "Drive": 0.85,
+            "PostUp": 0.90,
+            "SpotUp": 1.06,
+            "ExtraPass": 1.08,
+            "Kickout": 1.06,
+            "DHO": 0.95,
+            "Cut": 0.92,
+            "HornsSet": 1.02,
+        },
+        "PackLine_GapHelp": {
+            "Drive": 0.82,
+            "PnR": 0.95,
+            "SpotUp": 1.04,
+            "Kickout": 1.06,
+            "ExtraPass": 1.05,
+            "PostUp": 1.02,
+            "Cut": 0.95,
+            "DHO": 0.98,
+        },
+    },
+    "defense_meta_priors_rules": {
+        "Drop": [
+            {"key": "SHOT_MID_PU", "mult": 1.08},
+            {"key": "SHOT_3_OD", "mult": 1.03},
+            {"key": "SHOT_RIM_LAYUP", "mult": 0.96},
+            {"key": "SHOT_RIM_DUNK", "mult": 0.96},
+            {"key": "SHOT_RIM_CONTACT", "mult": 0.96},
+        ],
+        "Hedge_ShowRecover": [
+            {"key": "PASS_KICKOUT", "mult": 1.06},
+            {"key": "PASS_EXTRA", "mult": 1.05},
+            {"key": "TO_BAD_PASS", "mult": 1.03},
+        ],
+        "Blitz_TrapPnR": [
+            {"key": "PASS_SHORTROLL", "min": 0.10, "require_base_action": "PnR"},
+            {"key": "TO_BAD_PASS", "mult": 1.05},
+            {"key": "FOUL_REACH_TRAP", "add": 0.02},
+        ],
+        "Zone": [
+            {"key": "SHOT_3_CS", "mult": 1.06},
+            {"key": "PASS_EXTRA", "mult": 1.06},
+            {"key": "TO_BAD_PASS", "mult": 1.03},
+        ],
+        "PackLine_GapHelp": [
+            {"key": "SHOT_3_CS", "mult": 1.05},
+            {"key": "PASS_KICKOUT", "mult": 1.06},
+            {"key": "TO_CHARGE", "mult": 1.04},
+            {"key": "SHOT_RIM_LAYUP", "mult": 0.95},
+            {"key": "SHOT_RIM_DUNK", "mult": 0.95},
+            {"key": "SHOT_RIM_CONTACT", "mult": 0.95},
+        ],
+        "Switch_Everything": [
+            {"key": "SHOT_POST", "mult": 1.08},
+            {"key": "TO_HANDLE_LOSS", "mult": 1.04},
+        ],
+    },
+}
+
+ERA_TARGETS: Dict[str, Dict[str, Any]] = {
+    "era_modern_nbaish_v1": {
+        "targets": {
+            "pace": 99.0,
+            "ortg": 115.0,
+            "tov_pct": 0.135,
+            "three_rate": 0.40,
+            "ftr": 0.24,
+            "orb_pct": 0.28,
+            "shot_share_rim": 0.33,
+            "shot_share_mid": 0.12,
+            "shot_share_three": 0.55,
+            "corner3_share": 0.17,
+        },
+        "tolerances": {
+            "pace": 3.0,
+            "ortg": 4.0,
+            "tov_pct": 0.010,
+            "three_rate": 0.04,
+            "ftr": 0.04,
+            "orb_pct": 0.03,
+            "shot_share_rim": 0.04,
+            "shot_share_mid": 0.03,
+            "shot_share_three": 0.05,
+            "corner3_share": 0.04,
+        },
+        "op_thresholds": {
+            "ortg_hi": 127.0,
+            "tov_pct_hi": 0.20,
+            "pace_lo": 89.0,
+            "pace_hi": 109.0,
+        },
+    }
+}
+
+TUNABLE_REGISTRY: Dict[str, Tuple[str, str]] = {
+    "SHOT_BASE_RIM": ("match_engine.prob", "SHOT_BASE_RIM"),
+    "SHOT_BASE_MID": ("match_engine.prob", "SHOT_BASE_MID"),
+    "SHOT_BASE_3": ("match_engine.prob", "SHOT_BASE_3"),
+    "PASS_BASE_SUCCESS_MULT": ("match_engine.prob", "PASS_BASE_SUCCESS_MULT"),
+    "ORB_BASE": ("match_engine.resolve", "ORB_BASE"),
+    "TO_BASE": ("match_engine.resolve", "TO_BASE"),
+    "FOUL_BASE": ("match_engine.resolve", "FOUL_BASE"),
+}
+
 
 # Snapshot built-in defaults (used as fallback if era json is missing keys)
 DEFAULT_ERA: Dict[str, Any] = {
@@ -113,6 +315,74 @@ DEFAULT_ERA: Dict[str, Any] = {
 _ERA_CACHE: Dict[str, Dict[str, Any]] = {}
 _ACTIVE_ERA_NAME: str = "builtin_default"
 _ACTIVE_ERA_VERSION: str = "1.0"
+
+
+def get_mvp_rules() -> Dict[str, Any]:
+    return copy.deepcopy(MVP_RULES)
+
+
+def get_defense_meta_params() -> Dict[str, Any]:
+    return copy.deepcopy(DEFENSE_META_PARAMS)
+
+
+def get_era_targets(name: str) -> Dict[str, Any]:
+    return copy.deepcopy(ERA_TARGETS.get(name, ERA_TARGETS.get("era_modern_nbaish_v1", {})))
+
+
+def _import_attr(mod_path: str, attr: str):
+    mod = importlib.import_module(mod_path)
+    return mod, getattr(mod, attr)
+
+
+def snapshot_tunables() -> Dict[str, Any]:
+    snap: Dict[str, Any] = {}
+    for key, (mod_path, attr) in TUNABLE_REGISTRY.items():
+        try:
+            _, val = _import_attr(mod_path, attr)
+            snap[key] = copy.deepcopy(val)
+        except Exception:
+            snap[key] = None
+    return snap
+
+
+def restore_tunables(snapshot: Dict[str, Any]) -> None:
+    for key, val in (snapshot or {}).items():
+        target = TUNABLE_REGISTRY.get(key)
+        if not target:
+            continue
+        mod_path, attr = target
+        try:
+            mod = importlib.import_module(mod_path)
+            setattr(mod, attr, copy.deepcopy(val))
+        except Exception:
+            continue
+
+
+def apply_tunable_updates(updates: Dict[str, Any]) -> None:
+    updates = updates or {}
+    for key, delta in updates.items():
+        target = TUNABLE_REGISTRY.get(key)
+        if not target:
+            continue
+        mod_path, attr = target
+        try:
+            mod = importlib.import_module(mod_path)
+            cur = getattr(mod, attr)
+            setattr(mod, attr, delta if not isinstance(cur, (int, float)) else float(delta))
+        except Exception:
+            continue
+    # special hook: allow global shot prior scaling
+    if "ACTION_PRIOR_SHOT_SCALE" in updates:
+        try:
+            from . import profiles as _profiles
+
+            mult = float(updates.get("ACTION_PRIOR_SHOT_SCALE", 1.0))
+            for act, pri in _profiles.ACTION_OUTCOME_PRIORS.items():
+                for o in list(pri.keys()):
+                    if o.startswith("SHOT_"):
+                        pri[o] = pri.get(o, 0.0) * mult
+        except Exception:
+            pass
 
 
 def _resolve_era_path(era_name: str) -> Optional[str]:

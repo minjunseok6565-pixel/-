@@ -108,6 +108,21 @@ def normalize_weights(d: Dict[str, float]) -> Dict[str, float]:
         return {k: 1.0 / n for k in d} if d else {}
     return {k: max(v, 0.0) / s for k, v in d.items()}
 
+
+def apply_temperature(weights: Dict[str, float], T: float) -> Dict[str, float]:
+    if not weights:
+        return {}
+    exp = 1.0 / float(T) if float(T) != 0 else 1.0
+    adj = {k: max(v, 0.0) ** exp for k, v in weights.items()}
+    return normalize_weights(adj)
+
+
+def apply_min_floor(probs: Dict[str, float], floor: float) -> Dict[str, float]:
+    if not probs:
+        return {}
+    floored = {k: max(v, float(floor)) for k, v in probs.items()}
+    return normalize_weights(floored)
+
 def weighted_choice(rng: random.Random, weights: Dict[str, float]) -> str:
     total = sum(max(w, 0.0) for w in weights.values())
     if total <= 1e-12:

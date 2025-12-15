@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from .core import clamp
+from .era import get_mvp_rules
 from .models import Player, TeamState
 from .sim import simulate_game
 from .tactics import TacticsConfig
@@ -47,74 +48,81 @@ def make_sample_player(rng: random.Random, pid: str, name: str, archetype: str) 
     return Player(pid=pid, name=name, derived=base)
 
 def demo(seed: int = 7) -> None:
-    rng = random.Random(seed)
+    rules = get_mvp_rules()
 
-    tA_tac = TacticsConfig(
-        offense_scheme="Spread_HeavyPnR",
-        defense_scheme="Drop",
-        scheme_weight_sharpness=1.10,
-        scheme_outcome_strength=1.05,
-        def_scheme_weight_sharpness=1.00,
-        def_scheme_outcome_strength=1.00,
-        action_weight_mult={"PnR":1.15},
-        outcome_global_mult={"SHOT_3_CS":1.05},
-        outcome_by_action_mult={"PnR":{"PASS_SHORTROLL":1.10}},
-        context={"PACE_MULT":1.05}
-    )
+    def run_game(def_scheme: str, label: str) -> None:
+        rng = random.Random(seed)
 
-    tB_tac = TacticsConfig(
-        offense_scheme="Drive_Kick",
-        defense_scheme="PackLine_GapHelp",
-        scheme_weight_sharpness=1.05,
-        scheme_outcome_strength=1.05,
-        def_scheme_weight_sharpness=1.05,
-        def_scheme_outcome_strength=1.05,
-        outcome_global_mult={"PASS_KICKOUT":1.10},
-        context={"PACE_MULT":1.02}
-    )
+        tA_tac = TacticsConfig(
+            offense_scheme="Spread_HeavyPnR",
+            defense_scheme="Drop",
+            scheme_weight_sharpness=1.10,
+            scheme_outcome_strength=1.05,
+            def_scheme_weight_sharpness=1.00,
+            def_scheme_outcome_strength=1.00,
+            action_weight_mult={"PnR":1.15},
+            outcome_global_mult={"SHOT_3_CS":1.05},
+            outcome_by_action_mult={"PnR":{"PASS_SHORTROLL":1.10}},
+            context={"PACE_MULT":1.05}
+        )
 
-    teamA = TeamState(
-        name="A_SpreadPnR",
-        lineup=[
-            make_sample_player(rng,"A1","A1_PG","PG_SHOOT"),
-            make_sample_player(rng,"A2","A2_W","WING_3D"),
-            make_sample_player(rng,"A3","A3_S","SLASH"),
-            make_sample_player(rng,"A4","A4_B","BIG_SKILL"),
-            make_sample_player(rng,"A5","A5_C","BIG_RIM"),
-        ],
-        roles={"ball_handler":"A1","secondary_handler":"A2","screener":"A5","post":"A4","shooter":"A2","cutter":"A3","rim_runner":"A5"},
-        tactics=tA_tac
-    )
+        tB_tac = TacticsConfig(
+            offense_scheme="Drive_Kick",
+            defense_scheme=def_scheme,
+            scheme_weight_sharpness=1.05,
+            scheme_outcome_strength=1.05,
+            def_scheme_weight_sharpness=1.05,
+            def_scheme_outcome_strength=1.05,
+            outcome_global_mult={"PASS_KICKOUT":1.10},
+            context={"PACE_MULT":1.02}
+        )
 
-    teamB = TeamState(
-        name="B_DriveKick",
-        lineup=[
-            make_sample_player(rng,"B1","B1_PG","SLASH"),
-            make_sample_player(rng,"B2","B2_W","WING_3D"),
-            make_sample_player(rng,"B3","B3_W","WING_3D"),
-            make_sample_player(rng,"B4","B4_B","BIG_SKILL"),
-            make_sample_player(rng,"B5","B5_C","BIG_RIM"),
-        ],
-        roles={"ball_handler":"B1","secondary_handler":"B2","screener":"B5","post":"B4","shooter":"B2","cutter":"B3","rim_runner":"B5"},
-        tactics=tB_tac
-    )
+        teamA = TeamState(
+            name="A_SpreadPnR",
+            lineup=[
+                make_sample_player(rng,"A1","A1_PG","PG_SHOOT"),
+                make_sample_player(rng,"A2","A2_W","WING_3D"),
+                make_sample_player(rng,"A3","A3_S","SLASH"),
+                make_sample_player(rng,"A4","A4_B","BIG_SKILL"),
+                make_sample_player(rng,"A5","A5_C","BIG_RIM"),
+            ],
+            roles={"ball_handler":"A1","secondary_handler":"A2","screener":"A5","post":"A4","shooter":"A2","cutter":"A3","rim_runner":"A5"},
+            tactics=tA_tac
+        )
 
-    res = simulate_game(rng, teamA, teamB)
+        teamB = TeamState(
+            name="B_DriveKick",
+            lineup=[
+                make_sample_player(rng,"B1","B1_PG","SLASH"),
+                make_sample_player(rng,"B2","B2_W","WING_3D"),
+                make_sample_player(rng,"B3","B3_W","WING_3D"),
+                make_sample_player(rng,"B4","B4_B","BIG_SKILL"),
+                make_sample_player(rng,"B5","B5_C","BIG_RIM"),
+            ],
+            roles={"ball_handler":"B1","secondary_handler":"B2","screener":"B5","post":"B4","shooter":"B2","cutter":"B3","rim_runner":"B5"},
+            tactics=tB_tac
+        )
 
-    def print_team(label: str, r: Dict[str, Any]) -> None:
-        print(f"\n=== {label} ===")
-        print(f"PTS {r['PTS']} | FG {r['FGM']}/{r['FGA']} | 3PT {r['3PM']}/{r['3PA']} | FT {r['FTM']}/{r['FTA']} | TOV {r['TOV']} | ORB {r['ORB']} DRB {r['DRB']}")
-        top_off = list(r["OffActionCounts"].items())[:6]
-        top_out = list(r["OutcomeCounts"].items())[:8]
-        print("Top Off Actions:", ", ".join([f"{a}:{c}" for a,c in top_off]))
-        print("Top Outcomes:", ", ".join([f"{o}:{c}" for o,c in top_out]))
-        players = r["Players"]
-        top = sorted(players.items(), key=lambda kv: -kv[1]["PTS"])[:5]
-        print("Top scorers:", ", ".join([f"{pid}:{st['PTS']}pts" for pid,st in top]))
+        res = simulate_game(rng, teamA, teamB)
+        score_a = res["teams"][teamA.name]["PTS"]
+        score_b = res["teams"][teamB.name]["PTS"]
+        fouls = res.get("game_state", {}).get("team_fouls", {})
+        fatigue = res.get("game_state", {}).get("fatigue", {})
+        hist = res["teams"][teamA.name]["OffActionCounts"]
+        total = sum(hist.values()) or 1
+        freq = {k: round(v / total * 100, 2) for k, v in sorted(hist.items(), key=lambda kv: -kv[1])}
 
-    print("Possessions per team:", res["possessions_per_team"])
-    print_team("A_SpreadPnR", res["teams"]["A_SpreadPnR"])
-    print_team("B_DriveKick", res["teams"]["B_DriveKick"])
+        print(f"\n=== Run: {label} (Defense scheme={def_scheme}) ===")
+        print(f"Final Score: {teamA.name} {score_a} - {teamB.name} {score_b}")
+        print("Team fouls:", fouls)
+        sample_fatigue = {pid: round(fatigue.get(pid, 1.0), 3) for pid in list(fatigue.keys())[:4]}
+        print("Sample fatigue:", sample_fatigue)
+        print("Action frequency (team A offense):", freq)
+        print("Possessions per team:", res["possessions_per_team"])
+
+    print(f"Quarter length: {rules['quarter_length']}s | Shot clock: {rules['shot_clock']}s")
+    run_game("Drop", "Baseline Drop")
+    run_game("Switch_Everything", "Switch Everything")
 
 if __name__ == "__main__":
     demo()
