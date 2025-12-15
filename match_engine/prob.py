@@ -14,6 +14,11 @@ from .era import (
     ERA_VARIANCE_PARAMS,
 )
 
+SHOT_BASE_RIM = 1.0
+SHOT_BASE_MID = 1.0
+SHOT_BASE_3 = 1.0
+PASS_BASE_SUCCESS_MULT = 1.0
+
 # -------------------------
 # Probability model
 # -------------------------
@@ -27,6 +32,7 @@ def prob_from_scores(
     kind: str = "default",
     variance_mult: float = 1.0,
     logit_delta: float = 0.0,
+    fatigue_logit_delta: float = 0.0,
 ) -> float:
     """Convert an OffScore/DefScore matchup into a probability using a logistic model.
 
@@ -79,7 +85,7 @@ def prob_from_scores(
         if std > 1e-9:
             noise = rng.gauss(0.0, std)
 
-    p = sigmoid(base_logit + gap + noise + float(logit_delta))
+    p = sigmoid(base_logit + gap + noise + float(logit_delta) + float(fatigue_logit_delta))
     return clamp(p, float(pm.get("prob_min", 0.03)), float(pm.get("prob_max", 0.97)))
 
 

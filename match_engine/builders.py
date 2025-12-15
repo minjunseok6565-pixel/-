@@ -1,9 +1,15 @@
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
-from .core import clamp, normalize_weights
-from .profiles import ACTION_ALIASES, DEF_SCHEME_ACTION_WEIGHTS, OFF_SCHEME_ACTION_WEIGHTS
+from .core import apply_min_floor, apply_multipliers, apply_temperature, clamp, normalize_weights
+from .profiles import (
+    ACTION_ALIASES,
+    ACTION_OUTCOME_PRIORS,
+    DEF_SCHEME_ACTION_WEIGHTS,
+    OFF_SCHEME_ACTION_WEIGHTS,
+)
+from .era import get_defense_meta_params
 from .tactics import TacticsConfig
 
 
@@ -14,7 +20,11 @@ from .tactics import TacticsConfig
 def get_action_base(action: str) -> str:
     return ACTION_ALIASES.get(action, action)
 
-def build_offense_action_probs(off_tac: TacticsConfig, def_tac: Optional[TacticsConfig] = None) -> Dict[str, float]:
+def build_offense_action_probs(
+    off_tac: TacticsConfig,
+    def_tac: Optional[TacticsConfig] = None,
+    ctx: Optional[Dict[str, Any]] = None,
+) -> Dict[str, float]:
     """Build offense action distribution.
 
     UI rule (fixed): normalize((W_scheme[action] ^ sharpness) * off_action_mult[action] * def_opp_action_mult[action]).
@@ -30,7 +40,47 @@ def build_offense_action_probs(off_tac: TacticsConfig, def_tac: Optional[Tactics
     if def_tac is not None:
         for a, m in getattr(def_tac, 'opp_action_weight_mult', {}).items():
             base[a] = base.get(a, 0.5) * float(m)
-    return normalize_weights(base)
+
+    context = ctx or {}
+    if context.get("is_clutch"):
+        base["PnR"] = base.get("PnR", 0.5) * 1.05
+        base["Drive"] = base.get("Drive", 0.5) * 1.05
+        base["TransitionEarly"] = base.get("TransitionEarly", 0.5) * 0.90
+
+    if def_tac is None:
+        return normalize_weights(base)
+
+    meta = get_defense_meta_params()
+    tables = meta.get("defense_meta_action_mult_tables", {})
+    strength = float(meta.get("defense_meta_strength", 0.45))
+    lo = float(meta.get("defense_meta_clamp_lo", 0.80))
+    hi = float(meta.get("defense_meta_clamp_hi", 1.20))
+    temp = float(meta.get("defense_meta_temperature", 1.10))
+    floor = float(meta.get("defense_meta_floor", 0.03))
+
+    scheme_map = {
+        "Switch": "Switch_Everything",
+        "SwitchEverything": "Switch_Everything",
+        "Switch_Everything": "Switch_Everything",
+        "Drop": "Drop",
+        "Hedge_ShowRecover": "Hedge_ShowRecover",
+        "Hedge": "Hedge_ShowRecover",
+        "Blitz_TrapPnR": "Blitz_TrapPnR",
+        "ICE_SidePnR": "ICE_SidePnR",
+        "ICE": "ICE_SidePnR",
+        "Zone": "Zone",
+        "Matchup_Zone": "Zone",
+        "PackLine_GapHelp": "PackLine_GapHelp",
+    }
+    scheme = scheme_map.get(getattr(def_tac, "defense_scheme", ""), getattr(def_tac, "defense_scheme", ""))
+    meta_mults = tables.get(scheme, {})
+    for a, mult in meta_mults.items():
+        mult_final = clamp(1.0 + (float(mult) - 1.0) * strength, lo, hi)
+        base[a] = base.get(a, 0.5) * mult_final
+
+    probs = apply_temperature(base, temp)
+    probs = apply_min_floor(probs, floor)
+    return normalize_weights(probs)
 
 def build_defense_action_probs(tac: TacticsConfig) -> Dict[str, float]:
     """Build defense 'action' distribution (mostly for logging/feel).
@@ -87,10 +137,63 @@ def build_outcome_priors(action: str, off_tac: TacticsConfig, def_tac: TacticsCo
             if o in pri:
                 pri[o] *= 0.92
 
-    if def_tac.defense_scheme == "Blitz_TrapPnR" and base_action == "PnR":
-        pri["PASS_SHORTROLL"] = max(pri.get("PASS_SHORTROLL", 0.0), 0.10)
-        # reach foul can show up vs blitz
-        pri["FOUL_REACH_TRAP"] = pri.get("FOUL_REACH_TRAP", 0.0) + 0.02
+    avg_fatigue_off = tags.get("avg_fatigue_off")
+    if isinstance(avg_fatigue_off, (int, float)):
+        mult = 1.0 + (1.0 - float(avg_fatigue_off)) * (float(tags.get("fatigue_bad_mult_max", 1.12)) - 1.0)
+        if avg_fatigue_off < float(tags.get("fatigue_bad_critical", 0.25)):
+            mult += float(tags.get("fatigue_bad_bonus", 0.08))
+        mult = clamp(mult, 1.0, float(tags.get("fatigue_bad_cap", 1.20)))
+        for o in list(pri.keys()):
+            if o.startswith("TO_") or o.startswith("RESET_"):
+                pri[o] = pri.get(o, 0.0) * mult
+
+    try:
+        from . import resolve as _resolve_mod  # lazy to avoid cycle
+
+        to_base = float(getattr(_resolve_mod, "TO_BASE", 1.0))
+        foul_base = float(getattr(_resolve_mod, "FOUL_BASE", 1.0))
+        if to_base != 1.0:
+            for o in list(pri.keys()):
+                if o.startswith("TO_"):
+                    pri[o] = pri.get(o, 0.0) * to_base
+        if foul_base != 1.0:
+            for o in list(pri.keys()):
+                if o.startswith("FOUL_"):
+                    pri[o] = pri.get(o, 0.0) * foul_base
+    except Exception:
+        pass
+
+    meta = get_defense_meta_params()
+    rules = meta.get("defense_meta_priors_rules", {})
+    scheme_map = {
+        "Switch": "Switch_Everything",
+        "SwitchEverything": "Switch_Everything",
+        "Switch_Everything": "Switch_Everything",
+        "Drop": "Drop",
+        "Hedge_ShowRecover": "Hedge_ShowRecover",
+        "Hedge": "Hedge_ShowRecover",
+        "Blitz_TrapPnR": "Blitz_TrapPnR",
+        "ICE_SidePnR": "ICE_SidePnR",
+        "ICE": "ICE_SidePnR",
+        "Zone": "Zone",
+        "Matchup_Zone": "Zone",
+        "PackLine_GapHelp": "PackLine_GapHelp",
+    }
+    scheme = scheme_map.get(getattr(def_tac, "defense_scheme", ""), getattr(def_tac, "defense_scheme", ""))
+    for rule in rules.get(scheme, []):
+        target = rule.get("key")
+        if not target:
+            continue
+        if rule.get("require_base_action") and rule.get("require_base_action") != base_action:
+            continue
+        if "mult" in rule:
+            if target in pri:
+                pri[target] = pri.get(target, 0.0) * float(rule.get("mult", 1.0))
+        if "add" in rule:
+            pri[target] = pri.get(target, 0.0) + float(rule.get("add", 0.0))
+        if "min" in rule:
+            if target in pri:
+                pri[target] = max(pri.get(target, 0.0), float(rule.get("min", 0.0)))
 
     return normalize_weights(pri)
 

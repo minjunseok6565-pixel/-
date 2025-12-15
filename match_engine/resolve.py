@@ -1,15 +1,36 @@
 from __future__ import annotations
 
 import random
-from typing import Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
-from .core import clamp
+from .builders import get_action_base
+from .core import clamp, dot_profile
+from .defense import team_def_snapshot
 from .era import DEFAULT_PROB_MODEL, ERA_PROB_MODEL
-from .participants import choose_weighted_player
-from .prob import prob_from_scores
-from .profiles import ACTION_OUTCOME_PRIORS
-from .role_fit import apply_role_fit_to_priors_and_tags
-from .models import Player, TeamState
+from .participants import (
+    choose_creator_for_pulloff,
+    choose_finisher_rim,
+    choose_post_target,
+    choose_passer,
+    choose_shooter_for_mid,
+    choose_shooter_for_three,
+    choose_weighted_player,
+)
+from .prob import (
+    PASS_BASE_SUCCESS_MULT,
+    SHOT_BASE_3,
+    SHOT_BASE_MID,
+    SHOT_BASE_RIM,
+    _shot_kind_from_outcome,
+    _team_variance_mult,
+    prob_from_scores,
+)
+from .profiles import OUTCOME_PROFILES, PASS_BASE_SUCCESS, SHOT_BASE
+from .models import GameState, Player, ROLE_FALLBACK_RANK, TeamState
+
+ORB_BASE = 1.0
+TO_BASE = 1.0
+FOUL_BASE = 1.0
 
 # -------------------------
 # Rebound / Free throws
@@ -37,7 +58,8 @@ def rebound_orb_probability(offense: TeamState, defense: TeamState, orb_mult: fl
     def_drb = sum(p.get("REB_DR") for p in defense.lineup) / len(defense.lineup)
     off_orb *= orb_mult
     def_drb *= drb_mult
-    return prob_from_scores(None, float(ERA_PROB_MODEL.get('orb_base', 0.26)), off_orb, def_drb, kind='rebound', variance_mult=1.0)
+    base = float(ERA_PROB_MODEL.get('orb_base', 0.26)) * float(ORB_BASE)
+    return prob_from_scores(None, base, off_orb, def_drb, kind='rebound', variance_mult=1.0)
 
 def choose_orb_rebounder(rng: random.Random, offense: TeamState) -> Player:
     # top 3 ORB
@@ -59,6 +81,16 @@ def is_to(o: str) -> bool: return o.startswith("TO_")
 def is_foul(o: str) -> bool: return o.startswith("FOUL_")
 def is_reset(o: str) -> bool: return o.startswith("RESET_")
 
+
+def shot_zone_from_outcome(outcome: str) -> Optional[str]:
+    if outcome in ("SHOT_RIM_LAYUP", "SHOT_RIM_DUNK", "SHOT_RIM_CONTACT", "SHOT_TOUCH_FLOATER"):
+        return "rim"
+    if outcome in ("SHOT_MID_CS", "SHOT_MID_PU"):
+        return "mid"
+    if outcome in ("SHOT_3_CS", "SHOT_3_OD"):
+        return "3"
+    return None
+
 def outcome_points(o: str) -> int:
     return 3 if o in ("SHOT_3_CS","SHOT_3_OD") else 2 if o.startswith("SHOT_") else 0
 
@@ -74,10 +106,18 @@ def resolve_outcome(
     offense: TeamState,
     defense: TeamState,
     tags: Dict[str, Any],
-    pass_chain: int
+    pass_chain: int,
+    ctx: Optional[Dict[str, Any]] = None,
+    game_state: Optional[GameState] = None,
 ) -> Tuple[str, Dict[str, Any]]:
     # count outcome
     offense.outcome_counts[outcome] = offense.outcome_counts.get(outcome, 0) + 1
+
+    if outcome == "TO_SHOTCLOCK":
+        actor = offense.get_role_player("ball_handler", ROLE_FALLBACK_RANK["ball_handler"])
+        offense.tov += 1
+        offense.add_player_stat(actor.pid, "TOV", 1)
+        return "TURNOVER", {"outcome": outcome, "pid": actor.pid}
 
     # role-fit bad outcome logging (internal; only when role-fit was applied on this step)
     try:
@@ -136,20 +176,47 @@ def resolve_outcome(
     for p in defense.lineup:
         p.add_fatigue(base_cost_def)
 
+    ctx = ctx or {}
+    variance_mult = _team_variance_mult(offense) * float(ctx.get("variance_mult", 1.0))
+
     # compute scores
     off_vals = {k: actor.get(k) for k in prof["offense"].keys()}
     off_score = dot_profile(off_vals, prof["offense"])
     def_vals = {k: float(def_snap.get(k, 50.0)) for k in prof["defense"].keys()}
     def_score = dot_profile(def_vals, prof["defense"])
+    def_score *= float((ctx or {}).get("def_eff_mult", 1.0))
+
+    fatigue_map = (ctx or {}).get("fatigue_map", {}) or {}
+    fatigue_logit_max = float((ctx or {}).get("fatigue_logit_max", -0.25))
+    fatigue_val = float(fatigue_map.get(actor.pid, 1.0))
+    fatigue_logit_delta = (1.0 - fatigue_val) * fatigue_logit_max
 
     # resolve by type
     if is_shot(outcome):
         base_p = SHOT_BASE.get(outcome, 0.45)
         kind = _shot_kind_from_outcome(outcome)
-        p_make = prob_from_scores(rng, base_p, off_score, def_score, kind=kind, variance_mult=_team_variance_mult(offense), logit_delta=float(tags.get('role_logit_delta', 0.0)))
+        if kind == "shot_rim":
+            base_p *= float(SHOT_BASE_RIM)
+        elif kind == "shot_mid":
+            base_p *= float(SHOT_BASE_MID)
+        else:
+            base_p *= float(SHOT_BASE_3)
+        p_make = prob_from_scores(
+            rng,
+            base_p,
+            off_score,
+            def_score,
+            kind=kind,
+            variance_mult=variance_mult,
+            logit_delta=float(tags.get('role_logit_delta', 0.0)),
+            fatigue_logit_delta=fatigue_logit_delta,
+        )
         pts = outcome_points(outcome)
 
         offense.fga += 1
+        zone = shot_zone_from_outcome(outcome)
+        if zone:
+            offense.shot_zones[zone] = offense.shot_zones.get(zone, 0) + 1
         offense.add_player_stat(actor.pid, "FGA", 1)
         if pts == 3:
             offense.tpa += 1
@@ -168,8 +235,16 @@ def resolve_outcome(
             return "MISS", {"outcome": outcome, "pid": actor.pid, "points": pts}
 
     if is_pass(outcome):
-        base_s = PASS_BASE_SUCCESS.get(outcome, 0.90)
-        p_ok = prob_from_scores(rng, base_s, off_score, def_score, kind="pass", variance_mult=_team_variance_mult(offense), logit_delta=float(tags.get('role_logit_delta', 0.0)))
+        base_s = PASS_BASE_SUCCESS.get(outcome, 0.90) * float(PASS_BASE_SUCCESS_MULT)
+        p_ok = prob_from_scores(
+            rng,
+            base_s,
+            off_score,
+            def_score,
+            kind="pass",
+            variance_mult=variance_mult,
+            logit_delta=float(tags.get('role_logit_delta', 0.0)),
+        )
         if rng.random() < p_ok:
             return "CONTINUE", {"outcome": outcome, "pass_chain": pass_chain + 1}
         else:
@@ -182,12 +257,66 @@ def resolve_outcome(
         return "TURNOVER", {"outcome": outcome, "pid": actor.pid}
 
     if is_foul(outcome):
-        if outcome == "FOUL_REACH_TRAP":
-            # non-shooting foul -> reset
-            return "RESET", {"outcome": outcome, "type": "SIDE_OUT"}
-        nfts = 3 if outcome == "FOUL_DRAW_JUMPER" else 2
+        fouler_pid = None
+        team_fouls = (ctx or {}).get("team_fouls") or {}
+        player_fouls = (ctx or {}).get("player_fouls") or {}
+        foul_out_limit = int((ctx or {}).get("foul_out", 6))
+        def_on_court = (ctx or {}).get("def_on_court") or [p.pid for p in defense.lineup]
+        if def_on_court:
+            fouler_pid = rng.choice(list(def_on_court))
+            player_fouls[fouler_pid] = player_fouls.get(fouler_pid, 0) + 1
+            if game_state is not None:
+                game_state.player_fouls[fouler_pid] = player_fouls[fouler_pid]
+        team_fouls[defense.name] = team_fouls.get(defense.name, 0) + 1
+        if game_state is not None:
+            game_state.team_fouls[defense.name] = team_fouls[defense.name]
+
+        shot_key = "SHOT_3_OD" if outcome == "FOUL_DRAW_JUMPER" else "SHOT_RIM_DUNK"
+        pts = 3 if shot_key == "SHOT_3_OD" else 2
+        base_p = SHOT_BASE.get(shot_key, 0.45)
+        kind = _shot_kind_from_outcome(shot_key)
+        if kind == "shot_rim":
+            base_p *= float(SHOT_BASE_RIM)
+        elif kind == "shot_mid":
+            base_p *= float(SHOT_BASE_MID)
+        else:
+            base_p *= float(SHOT_BASE_3)
+        kind = _shot_kind_from_outcome(shot_key)
+        p_make = prob_from_scores(
+            rng,
+            base_p,
+            off_score,
+            def_score,
+            kind=kind,
+            variance_mult=variance_mult,
+            logit_delta=float(tags.get('role_logit_delta', 0.0)),
+            fatigue_logit_delta=fatigue_logit_delta,
+        )
+
+        and_one = False
+        if rng.random() < p_make:
+            offense.fga += 1
+            offense.add_player_stat(actor.pid, "FGA", 1)
+            if pts == 3:
+                offense.tpa += 1
+                offense.add_player_stat(actor.pid, "3PA", 1)
+            offense.fgm += 1
+            offense.add_player_stat(actor.pid, "FGM", 1)
+            if pts == 3:
+                offense.tpm += 1
+                offense.add_player_stat(actor.pid, "3PM", 1)
+            offense.pts += pts
+            offense.add_player_stat(actor.pid, "PTS", pts)
+            and_one = True
+
+        nfts = (3 if outcome == "FOUL_DRAW_JUMPER" else 2) + (1 if and_one else 0)
         resolve_free_throws(rng, actor, nfts, offense)
-        return "FOUL", {"outcome": outcome, "pid": actor.pid, "fts": nfts}
+
+        if fouler_pid and player_fouls.get(fouler_pid, 0) >= foul_out_limit:
+            if game_state is not None:
+                game_state.fatigue[fouler_pid] = 0.0
+
+        return "FOUL", {"outcome": outcome, "pid": actor.pid, "fts": nfts, "and_one": and_one, "fouler": fouler_pid}
 
     if is_reset(outcome):
         return "RESET", {"outcome": outcome}

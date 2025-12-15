@@ -12,6 +12,23 @@ from .core import clamp
 DERIVED_DEFAULT = 50.0
 
 @dataclass
+class GameState:
+    quarter: int
+    clock_sec: int
+    shot_clock_sec: int
+    score_home: int
+    score_away: int
+    possession: int = 0
+    team_fouls: Dict[str, int] = field(default_factory=dict)
+    player_fouls: Dict[str, int] = field(default_factory=dict)
+    fatigue: Dict[str, float] = field(default_factory=dict)
+    minutes_played_sec: Dict[str, int] = field(default_factory=dict)
+    on_court_home: List[str] = field(default_factory=list)
+    on_court_away: List[str] = field(default_factory=list)
+    targets_sec_home: Dict[str, int] = field(default_factory=dict)
+    targets_sec_away: Dict[str, int] = field(default_factory=dict)
+
+@dataclass
 class Player:
     pid: str
     name: str
@@ -51,6 +68,9 @@ class TeamState:
     orb: int = 0
     drb: int = 0
     possessions: int = 0
+
+    # shot zones
+    shot_zones: Dict[str, int] = field(default_factory=dict)  # rim/mid/3/corner3 attempts
 
     # breakdowns
     off_action_counts: Dict[str, int] = field(default_factory=dict)
