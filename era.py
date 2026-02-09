@@ -91,7 +91,7 @@ DEFAULT_PROB_MODEL: Dict[str, float] = {
     "putback_try_clamp_max": 0.45,
 
     # Shot make penalty for Putback (logit-space delta added in resolve.py)
-    "putback_make_logit_penalty": -0.05,
+    "putback_make_logit_penalty": 0.0,
 }
 
 
