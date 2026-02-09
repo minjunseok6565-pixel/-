@@ -74,7 +74,7 @@ def _should_award_fastbreak_fg(ctx: dict, first_fga_sc) -> bool:
     if first_fga_sc is None:
         return False
     try:
-        return float(first_fga_sc) >= 15.0
+        return float(first_fga_sc) >= 14.5
     except Exception:
         return False
 
