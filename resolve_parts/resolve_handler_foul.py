@@ -32,6 +32,10 @@ FOUL_DRAW_CONTACT_BUCKET = {
     "SHOT_RIM_LAYUP": "normal",
     "SHOT_MID_PU": "soft",
     "SHOT_3_OD": "soft",
+    "SHOT_RIM_DUNK": "hard",
+    "SHOT_TOUCH_FLOATER": "normal",
+    "SHOT_MID_CS": "soft",
+    "SHOT_3_CS": "soft",
 }
 
 def handle_foul(
@@ -120,14 +124,41 @@ def handle_foul(
         # Choose which "would-be" shot was fouled (affects shot-chart + and-1 mix)
         if outcome == "FOUL_DRAW_JUMPER":
             # most shooting fouls on jumpers are 2s; 3PT fouls are rarer
-            shot_key = "SHOT_3_OD" if rng.random() < 0.08 else "SHOT_MID_PU"
+            # pass_chain > 0  => more catch-and-shoot (CS), less pull-up (PU)
+            # keep total 3PT foul rate constant at 0.08
+            if pass_chain and pass_chain > 0:
+                p3cs = 0.06
+                p3od = 0.02
+                pmidcs = 0.45
+            else:
+                p3cs = 0.02
+                p3od = 0.06
+                pmidcs = 0.15
+
+            r = rng.random()
+            if r < p3cs:
+                shot_key = "SHOT_3_CS"
+            elif r < (p3cs + p3od):
+                shot_key = "SHOT_3_OD"
+            elif r < (p3cs + p3od + pmidcs):
+                shot_key = "SHOT_MID_CS"
+            else:
+                shot_key = "SHOT_MID_PU"
         elif outcome == "FOUL_DRAW_POST":
             # post-ups draw both contact finishes and true post shots
             shot_key = "SHOT_POST" if rng.random() < 0.55 else "SHOT_RIM_CONTACT"
         else:  # FOUL_DRAW_RIM
-            shot_key = "SHOT_RIM_CONTACT" if rng.random() < 0.40 else "SHOT_RIM_LAYUP"
+            r = rng.random()
+            if r < 0.18:
+                shot_key = "SHOT_RIM_DUNK"
+            elif r < 0.30:
+                shot_key = "SHOT_TOUCH_FLOATER"
+            elif r < 0.60:
+                shot_key = "SHOT_RIM_CONTACT"
+            else:
+                shot_key = "SHOT_RIM_LAYUP"
 
-        pts = 3 if shot_key == "SHOT_3_OD" else 2
+        pts = 3 if shot_key in ("SHOT_3_OD", "SHOT_3_CS") else 2
 
         # QUALITY: apply scheme/role quality delta to FOUL_DRAW make-prob (shot-like).
         scheme = getattr(defense.tactics, "defense_scheme", "")
