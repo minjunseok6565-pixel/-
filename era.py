@@ -70,11 +70,11 @@ DEFAULT_PROB_MODEL: Dict[str, float] = {
 
     # Putback modeling (ORB -> immediate try)
     # 'try' params are probabilities in [0..1] used at the ORB branch to choose a "Putback" action.
-    "putback_try_base_rim": 0.325,
-    "putback_try_base_post": 0.285,
-    "putback_try_base_mid": 0.12,
-    "putback_try_base_3": 0.07,
-    "putback_try_base_ft": 0.30,
+    "putback_try_base_rim": 0.33,
+    "putback_try_base_post": 0.3,
+    "putback_try_base_mid": 0.18,
+    "putback_try_base_3": 0.1,
+    "putback_try_base_ft": 0.34,
 
     # If the miss was blocked but stayed in-play, putback tries are less frequent (defender is attached).
     "putback_try_mult_blocked": 0.70,
