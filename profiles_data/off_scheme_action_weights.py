@@ -20,7 +20,7 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "ExtraPass": 5,
         "SpotUp": 6,
         "Cut": 4,
-        "PostUp": 2,
+        "PostUp": 3,
     },
     "Drive_Kick": {
         "Drive": 30,
@@ -33,7 +33,7 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "PnR": 3,
         "DHO": 2,
         "PnP": 3,
-        "PostUp": 2,
+        "PostUp": 3,
     },
     "FiveOut": {
         "Drive": 20,
@@ -46,7 +46,7 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "DHO": 8,
         "PnR": 5,
         "PnP": 10,
-        "PostUp": 2,
+        "PostUp": 3,
     },
     "Motion_SplitCut": {
         "Cut": 17,
@@ -59,7 +59,7 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "SpotUp": 6,
         "PnR": 4,
         "PnP": 3,
-        "PostUp": 2,
+        "PostUp": 3,
     },
     "DHO_Chicago": {
         "DHO": 16,
@@ -71,10 +71,10 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "SpotUp": 9,
         "PnR": 6,
         "PnP": 4,
-        "PostUp": 2,
+        "PostUp": 3,
     },
     "Post_InsideOut": {
-        "PostUp": 25,
+        "PostUp": 31,
         "ISO": 5,
         "Kickout": 14,
         "ExtraPass": 8,
@@ -97,7 +97,7 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "ExtraPass": 6,
         "SpotUp": 8,
         "Cut": 6,
-        "PostUp": 2,
+        "PostUp": 3,
     },
     "Transition_Early": {
         "TransitionEarly": 20,
@@ -109,6 +109,6 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "ISO": 3,
         "PnR": 4,
         "PnP": 2,
-        "PostUp": 2,
+        "PostUp": 3,
     },
 }
