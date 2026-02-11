@@ -12,5 +12,5 @@ SHOT_BASE = {
     "SHOT_MID_PU": 0.4,
     "SHOT_3_CS": 0.315,
     "SHOT_3_OD": 0.31,
-    "SHOT_POST": 0.48,
+    "SHOT_POST": 0.56,
 }
