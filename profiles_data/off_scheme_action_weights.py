@@ -100,7 +100,7 @@ OFF_SCHEME_ACTION_WEIGHTS: Dict[str, Dict[str, float]] = {
         "PostUp": 3,
     },
     "Transition_Early": {
-        "TransitionEarly": 20,
+        "TransitionEarly": 17,
         "Drive": 10,
         "Kickout": 10,
         "SpotUp": 9,
