@@ -221,7 +221,7 @@ MVP_RULES = {
         "QuickShot": 1.4,
         "Putback": 0.95,
         "Cut": 4.8,
-        "TransitionEarly": 5.0,
+        "TransitionEarly": 5.6,
         "Kickout": 3.2,
         "ExtraPass": 3.5,
         "Reset": 5.3,
