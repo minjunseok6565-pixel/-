@@ -10,7 +10,7 @@ SHOT_BASE = {
     "SHOT_TOUCH_FLOATER": 0.44,
     "SHOT_MID_CS": 0.43,
     "SHOT_MID_PU": 0.4,
-    "SHOT_3_CS": 0.315,
-    "SHOT_3_OD": 0.31,
+    "SHOT_3_CS": 0.32,
+    "SHOT_3_OD": 0.315,
     "SHOT_POST": 0.58,
 }
