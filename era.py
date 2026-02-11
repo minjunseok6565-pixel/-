@@ -171,8 +171,8 @@ MVP_RULES = {
         "handler": 0.014,
         "wing": 0.011,
         "big": 0.01,
-        "transition_emphasis": 0.003,
-        "heavy_pnr": 0.001,
+        "transition_emphasis": 0.007,
+        "heavy_pnr": 0.002,
     },
     "fatigue_recovery": {
         "bench_per_sec": 0.0018,  # default fallback in code is 0.0022, so this halves bench recovery
