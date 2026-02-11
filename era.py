@@ -174,6 +174,9 @@ MVP_RULES = {
         "transition_emphasis": 0.003,
         "heavy_pnr": 0.001,
     },
+    "fatigue_recovery": {
+        "bench_per_sec": 0.0018,  # default fallback in code is 0.0022, so this halves bench recovery
+    },
     "fatigue_thresholds": {"sub_out": 0.35, "sub_in": 0.70},
     "fatigue_targets": {
         "starter_sec": 32 * 60,
