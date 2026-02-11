@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+from functools import lru_cache
 
 import warnings
 
@@ -46,6 +47,7 @@ _FATIGUE_LOW_EXACT = {
 }
 
 
+@lru_cache(maxsize=2048)
 def _fatigue_profile_for_key(key: str):
     """
     스탯 키에 따라 피로 프로필을 선택한다.
