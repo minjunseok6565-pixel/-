@@ -151,8 +151,8 @@ MVP_RULES = {
 
     # --- Recovery during breaks (fatigue only; no minutes/clock) ---
     "break_recovery": {
-        "on_court_per_sec": 0.0010,  # 코트 위에 있던 선수의 휴식 회복(초당)
-        "bench_per_sec": 0.0016,     # 벤치 선수의 휴식 회복(초당)
+        "on_court_per_sec": 0.0008,  # 코트 위에 있던 선수의 휴식 회복(초당)
+        "bench_per_sec": 0.0013,     # 벤치 선수의 휴식 회복(초당)
     },
     "shot_clock": 24,
     "orb_reset": 14,
@@ -168,10 +168,10 @@ MVP_RULES = {
         "off_scale": 0.00030,
     },
     "fatigue_loss": {
-        "handler": 0.012,
-        "wing": 0.010,
-        "big": 0.009,
-        "transition_emphasis": 0.001,
+        "handler": 0.014,
+        "wing": 0.011,
+        "big": 0.01,
+        "transition_emphasis": 0.003,
         "heavy_pnr": 0.001,
     },
     "fatigue_thresholds": {"sub_out": 0.35, "sub_in": 0.70},
@@ -319,7 +319,7 @@ MVP_RULES = {
      "timeout_recovery": {
          "enabled": True,
          # "equivalent break seconds" to apply as recovery effect
-         "equiv_break_sec": 12.0,
+         "equiv_break_sec": 8.0,
          "on_court_mult": 1.0,
          "bench_mult": 1.0,
      },
