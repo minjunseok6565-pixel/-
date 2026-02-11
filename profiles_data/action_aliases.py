@@ -29,5 +29,5 @@ ACTION_ALIASES = {
     "ScreenTheScreener_STS": "Cut",
     "SecondaryBreak": "TransitionEarly",
     "QuickPost": "PostUp",
-    "QuickShot": "QuickShot",,
+    "QuickShot": "QuickShot",
 }
