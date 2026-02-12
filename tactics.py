@@ -44,7 +44,6 @@ _CANON_DEFENSE_SCHEMES = {
     "Blitz_TrapPnR",
     "ICE_SidePnR",
     "Zone",
-    "PackLine_GapHelp",
 }
 
 # Map a normalized alias string -> canonical defense scheme key.
@@ -81,10 +80,6 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
     "23": "Zone",
     "23zone": "Zone",
 
-    # Pack line
-    "packline": "PackLine_GapHelp",
-    "packlinegaphelp": "PackLine_GapHelp",
-    "gaphelp": "PackLine_GapHelp",
 
     # Korean / localized labels used by UI / quality tables
     "올스위치": "Switch_Everything",         # '올-스위치'
