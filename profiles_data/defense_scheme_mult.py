@@ -32,8 +32,4 @@ DEFENSE_SCHEME_MULT: Dict[str, Dict[str, Dict[str, float]]] = {
              "Kickout": {"PASS_EXTRA":1.08, "TO_BAD_PASS":1.08},
              "PostUp": {"SHOT_POST":0.85, "PASS_SKIP":1.15},
              "HornsSet": {"SHOT_MID_CS":1.15}},
-    "PackLine_GapHelp": {"Drive": {"SHOT_RIM_LAYUP":0.65, "SHOT_RIM_DUNK":0.70, "PASS_KICKOUT":1.08, "PASS_EXTRA":1.08, "SHOT_3_CS":1.05, "TO_CHARGE":1.18},
-                         "ISO": {"SHOT_RIM_LAYUP":0.88, "SHOT_RIM_DUNK":0.90, "PASS_KICKOUT":1.12, "SHOT_MID_PU":1.06, "TO_CHARGE":1.08},
-                         "PnR": {"PASS_KICKOUT":1.15, "SHOT_MID_PU":1.05},
-                         "ExtraPass": {"TO_BAD_PASS":1.05}},
 }
