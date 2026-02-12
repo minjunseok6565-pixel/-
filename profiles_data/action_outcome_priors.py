@@ -169,8 +169,8 @@ ACTION_OUTCOME_PRIORS: Dict[str, Dict[str, float]] = {
     },
     "TransitionEarly": {
         "SHOT_RIM_CONTACT": 0.29,
-        "SHOT_RIM_DUNK": 0.25,
-        "SHOT_RIM_LAYUP": 0.4,
+        "SHOT_RIM_DUNK": 0.21,
+        "SHOT_RIM_LAYUP": 0.38,
         "SHOT_TOUCH_FLOATER": 0.03,
         "SHOT_3_CS": 0.03,
         "SHOT_3_OD": 0.06,
