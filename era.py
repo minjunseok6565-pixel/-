@@ -390,16 +390,6 @@ DEFENSE_META_PARAMS = {
             "Cut": 0.92,
             "HornsSet": 1.02,
         },
-        "PackLine_GapHelp": {
-            "Drive": 0.82,
-            "PnR": 0.95,
-            "SpotUp": 1.03,
-            "Kickout": 1.03,
-            "ExtraPass": 1.03,
-            "PostUp": 1.02,
-            "Cut": 0.95,
-            "DHO": 0.98,
-        },
     },
     "defense_meta_priors_rules": {
         "Drop": [
@@ -419,14 +409,6 @@ DEFENSE_META_PARAMS = {
         "Zone": [
             {"key": "SHOT_3_CS", "mult": 1.04},
             {"key": "PASS_EXTRA", "mult": 1.04},
-        ],
-        "PackLine_GapHelp": [
-            {"key": "SHOT_3_CS", "mult": 1.04},
-            {"key": "PASS_KICKOUT", "mult": 1.03},
-            {"key": "TO_CHARGE", "mult": 1.06},
-            {"key": "SHOT_RIM_LAYUP", "mult": 0.95},
-            {"key": "SHOT_RIM_DUNK", "mult": 0.95},
-            {"key": "SHOT_RIM_CONTACT", "mult": 0.95},
         ],
         "Switch_Everything": [
             {"key": "SHOT_POST", "mult": 1.08},
