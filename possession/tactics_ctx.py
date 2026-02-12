@@ -16,7 +16,6 @@ from ..models import GameState, TeamState
 
 
 _SCHEME_HELP_BASELINE = {
-    "PackLine_GapHelp": 0.65,
     "Zone": 0.45,
     "Blitz_TrapPnR": 0.55,
     "Hedge_ShowRecover": 0.30,
