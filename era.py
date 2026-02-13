@@ -371,15 +371,6 @@ DEFENSE_META_PARAMS = {
             "Cut": 1.03,
             "HornsSet": 1.02,
         },
-        "ICE_SidePnR": {
-            "PnR": 0.92,
-            "Drive": 0.90,
-            "SpotUp": 1.03,
-            "Kickout": 1.05,
-            "ExtraPass": 1.03,
-            "DHO": 1.02,
-            "Cut": 1.02,
-        },
         "Zone": {
             "Drive": 0.85,
             "PostUp": 0.90,

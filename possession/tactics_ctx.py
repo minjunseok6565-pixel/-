@@ -20,7 +20,6 @@ _SCHEME_HELP_BASELINE = {
     "Blitz_TrapPnR": 0.55,
     "Hedge_ShowRecover": 0.30,
     "Drop": 0.20,
-    "ICE_SidePnR": 0.15,
     "Switch_Everything": -0.25,
 }
 

@@ -4,7 +4,6 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
-
 # -------------------------
 # Tactics config
 # -------------------------
@@ -29,7 +28,6 @@ class TacticsConfig:
 
     context: Dict[str, Any] = field(default_factory=dict)
 
-
 # -------------------------
 # Defense scheme canonicalization
 # -------------------------
@@ -42,7 +40,6 @@ _CANON_DEFENSE_SCHEMES = {
     "Switch_Everything",
     "Hedge_ShowRecover",
     "Blitz_TrapPnR",
-    "ICE_SidePnR",
     "Zone",
 }
 
@@ -70,27 +67,19 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
     "blitztrappnr": "Blitz_TrapPnR",
     "blitztrap": "Blitz_TrapPnR",
 
-    # ICE side PnR
-    "ice": "ICE_SidePnR",
-    "icesidepnr": "ICE_SidePnR",
-
     # Zone
     "zone": "Zone",
     "matchupzone": "Zone",
     "23": "Zone",
     "23zone": "Zone",
 
-
     # Korean / localized labels used by UI / quality tables
     "올스위치": "Switch_Everything",         # '올-스위치'
-    "아이스": "ICE_SidePnR",                 # '아이스 픽앤롤'
-    "아이스픽앤롤": "ICE_SidePnR",
     "23존디펜스": "Zone",                   # '2-3 존디펜스'
     "23존": "Zone",
     "헷지쇼앤리커버": "Hedge_ShowRecover",   # '헷지-쇼앤리커버'
     "블리츠트랩": "Blitz_TrapPnR",           # '블리츠-트랩'
 }
-
 
 def canonical_defense_scheme(value: Any) -> str:
     """Return a canonical defense scheme key.
@@ -117,6 +106,5 @@ def canonical_defense_scheme(value: Any) -> str:
         return mapped
 
     return s
-
 
 
