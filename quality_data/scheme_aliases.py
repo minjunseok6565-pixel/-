@@ -13,6 +13,7 @@ SCHEME_ALIASES: Dict[str, str] = {
     "drop": "drop",
     "Drop": "drop",
     "Switch_Everything": "올-스위치",
+    "Switch_1_4": "스위치 1-4",
     "Hedge_ShowRecover": "헷지-쇼앤리커버",
     "Blitz_TrapPnR": "블리츠-트랩",
     "Zone": "2-3 존디펜스",
@@ -20,6 +21,19 @@ SCHEME_ALIASES: Dict[str, str] = {
     "all-switch": "올-스위치",
     "switch": "올-스위치",
     "올-스위치": "올-스위치",
+    # Switch 1-4
+    "switch_1_4": "스위치 1-4",
+    "switch1_4": "스위치 1-4",
+    "switch 1-4": "스위치 1-4",
+    "switch 1–4": "스위치 1-4",  # en-dash
+    "switch 1—4": "스위치 1-4",  # em-dash
+    "switch1-4": "스위치 1-4",
+    "switch1–4": "스위치 1-4",
+    "switch1—4": "스위치 1-4",
+    "스위치 1-4": "스위치 1-4",
+    "스위치 1–4": "스위치 1-4",
+    "스위치 1—4": "스위치 1-4",
+
     "hedge": "헷지-쇼앤리커버",
     "hedge-recover": "헷지-쇼앤리커버",
     "헷지-쇼앤리커버": "헷지-쇼앤리커버",

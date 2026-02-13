@@ -354,6 +354,18 @@ DEFENSE_META_PARAMS = {
             "HornsSet": 1.05,
             "ExtraPass": 1.02,
         },
+        "Switch_1_4": {
+            # 1-4 switch: still discourages simple PnR/DHO triggers, but less extreme than all-switch.
+            # Allows more drive attempts vs a backline anchor, and slightly increases post probing.
+            "PnR": 0.88,
+            "DHO": 0.95,
+            "Drive": 0.97,
+            "PostUp": 1.07,
+            "Cut": 1.05,
+            "SpotUp": 1.02,
+            "HornsSet": 1.04,
+            "ExtraPass": 1.02,
+        },
         "Hedge_ShowRecover": {
             "PnR": 0.90,
             "Drive": 0.92,
@@ -404,6 +416,11 @@ DEFENSE_META_PARAMS = {
         "Switch_Everything": [
             {"key": "SHOT_POST", "mult": 1.08},
             {"key": "TO_HANDLE_LOSS", "mult": 1.04},
+        ],
+        "Switch_1_4": [
+            # 1-4 switch tends to invite some post probing (wings) and creates mild handle pressure.
+            {"key": "SHOT_POST", "mult": 1.05},
+            {"key": "TO_HANDLE_LOSS", "mult": 1.02},
         ],
     },
 }
