@@ -42,6 +42,7 @@ _CANON_DEFENSE_SCHEMES = {
     "Hedge_ShowRecover",
     "Blitz_TrapPnR",
     "Zone",
+    "AtTheLevel",
 }
 
 # Map a normalized alias string -> canonical defense scheme key.
@@ -94,6 +95,15 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
     "23존": "Zone",
     "헷지쇼앤리커버": "Hedge_ShowRecover",   # '헷지-쇼앤리커버'
     "블리츠트랩": "Blitz_TrapPnR",           # '블리츠-트랩'
+
+    # At-the-Level (high show / contain at the level)
+    "atthelevel": "AtTheLevel",
+    "atthelevelshow": "AtTheLevel",
+    "atthelevelcontain": "AtTheLevel",
+    "atlevel": "AtTheLevel",
+    "highshow": "AtTheLevel",
+    "앳더레벨": "AtTheLevel",
+
 }
 
 def canonical_defense_scheme(value: Any) -> str:

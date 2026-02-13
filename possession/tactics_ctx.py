@@ -19,6 +19,7 @@ _SCHEME_HELP_BASELINE = {
     "Zone": 0.45,
     "Blitz_TrapPnR": 0.55,
     "Hedge_ShowRecover": 0.30,
+    "AtTheLevel": 0.35,
     "Drop": 0.20,
     # 1-4 switch keeps a backline anchor, so it needs more help than all-switch but still less than drop/hedge.
     "Switch_1_4": -0.15,
