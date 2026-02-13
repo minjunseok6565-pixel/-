@@ -180,13 +180,6 @@ def build_outcome_priors(
     for o, m in dm.items():
         if o in pri:
             pri[o] *= effective_scheme_multiplier(m, def_tac.def_scheme_outcome_strength)
-
-    # conditional (MVP subset)
-    if def_scheme == "ICE_SidePnR" and tags.get("is_side_pnr", False):
-        for o in ("RESET_RESREEN","PASS_KICKOUT"):
-            if o in pri:
-                pri[o] *= 1.03
-
     if tags.get("in_transition", False):
         for o in ("TO_HANDLE_LOSS","TO_CHARGE","RESET_HUB","RESET_RESREEN"):
             if o in pri:
