@@ -38,6 +38,7 @@ class TacticsConfig:
 _CANON_DEFENSE_SCHEMES = {
     "Drop",
     "Switch_Everything",
+    "Switch_1_4",
     "Hedge_ShowRecover",
     "Blitz_TrapPnR",
     "Zone",
@@ -54,6 +55,16 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
     "switcheverything": "Switch_Everything",
     "allswitch": "Switch_Everything",
     # common UI / config spellings normalize to 'allswitch'
+
+    # Switch 1-4 (1~4 switch, 5 stays in backline)
+    "switch14": "Switch_1_4",
+    "switch1to4": "Switch_1_4",
+    "switch1through4": "Switch_1_4",
+    "switch1-4": "Switch_1_4",
+    "switch1–4": "Switch_1_4",  # en-dash
+    "switch1—4": "Switch_1_4",  # em-dash
+    "switch14only": "Switch_1_4",
+
 
     # Hedge / show-recover
     "hedge": "Hedge_ShowRecover",
@@ -75,6 +86,10 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
 
     # Korean / localized labels used by UI / quality tables
     "올스위치": "Switch_Everything",         # '올-스위치'
+    "스위치14": "Switch_1_4",
+    "스위치1-4": "Switch_1_4",
+    "스위치1–4": "Switch_1_4",
+    "스위치1—4": "Switch_1_4",
     "23존디펜스": "Zone",                   # '2-3 존디펜스'
     "23존": "Zone",
     "헷지쇼앤리커버": "Hedge_ShowRecover",   # '헷지-쇼앤리커버'
@@ -100,7 +115,7 @@ def canonical_defense_scheme(value: Any) -> str:
         return s
 
     # Normalize: lowercase + remove spaces/underscores/hyphens
-    key = re.sub(r"[\s_\-]+", "", s.lower())
+    key = re.sub(r"[\s_\-–—]+", "", s.lower())
     mapped = _DEFENSE_SCHEME_ALIAS_NORM.get(key)
     if mapped in _CANON_DEFENSE_SCHEMES:
         return mapped

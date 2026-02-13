@@ -14,6 +14,15 @@ DEFENSE_SCHEME_MULT: Dict[str, Dict[str, Dict[str, float]]] = {
                           "DHO": {"RESET_REDO_DHO":1.15, "TO_HANDLE_LOSS":1.10},
                           "PostUp": {"SHOT_POST":1.35, "FOUL_DRAW_POST":1.20},
                           "Drive": {"TO_CHARGE":1.10}},
+    "Switch_1_4": {
+        # 1-4 switch, 5 stays as anchor: less extreme than all-switch, but still disrupts re-screens and timing.
+        "PnR": {"RESET_RESREEN":1.18, "TO_SHOT_CLOCK":1.10, "PASS_SHORTROLL":0.90, "SHOT_3_OD":1.06},
+        "PnP": {"SHOT_3_CS": 0.97, "TO_HANDLE_LOSS": 1.04, "RESET_RESREEN": 1.08},
+        "ISO": {"TO_HANDLE_LOSS":1.06, "SHOT_MID_PU":1.04, "SHOT_3_OD":1.02, "SHOT_RIM_LAYUP":0.96},
+        "DHO": {"RESET_REDO_DHO":1.10, "TO_HANDLE_LOSS":1.07},
+        "PostUp": {"SHOT_POST":1.22, "FOUL_DRAW_POST":1.12},
+        "Drive": {"TO_CHARGE":1.06},
+    },
     "Hedge_ShowRecover": {"PnR": {"PASS_SHORTROLL":1.25, "PASS_KICKOUT":1.10, "RESET_RESREEN":1.10},
                           "PnP": {"SHOT_3_CS": 0.96, "PASS_KICKOUT": 1.05, "SHOT_RIM_LAYUP": 1.03},
                           "ISO": {"TO_HANDLE_LOSS":1.06, "PASS_KICKOUT":1.05, "SHOT_TOUCH_FLOATER":1.05},
