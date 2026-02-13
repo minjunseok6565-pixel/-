@@ -7,6 +7,7 @@ NOTE: Split from sim.py on 2025-12-27.
 
 import random
 import math
+from functools import lru_cache
 from typing import Any, Dict, Optional, List, Tuple
 
 import schema
@@ -21,6 +22,17 @@ from .validation import (
 )
 from .game_config import build_game_config
 from .era import get_mvp_rules, load_era_config
+
+@lru_cache(maxsize=16)
+def _cached_era_and_game_config(era_name: str):
+    """Cache (era_cfg, warnings, errors, game_cfg) for repeated simulations.
+
+    Calibration/Monte Carlo runs call simulate_game many times with the same era.
+    build_game_config() does deepcopies + freezing, so caching here saves noticeable time.
+    """
+    era_cfg, era_warnings, era_errors = load_era_config(era_name)
+    game_cfg = build_game_config(era_cfg)
+    return era_cfg, tuple(era_warnings), tuple(era_errors), game_cfg
 
 from .sim_clock import apply_dead_ball_cost
 from .sim_fatigue import _apply_break_recovery, _apply_fatigue_loss
@@ -294,13 +306,12 @@ def simulate_game(
         )
 
     # 0-1: load era tuning parameters (priors/base%/scheme multipliers/prob model)
-    era_cfg, era_warnings, era_errors = load_era_config(era)
+    era_cfg, era_warnings, era_errors, game_cfg = _cached_era_and_game_config(str(era))
     for w in era_warnings:
         report.warn(f"era[{era}]: {w}")
     for e in era_errors:
         report.error(f"era[{era}]: {e}")
 
-    game_cfg = build_game_config(era_cfg)
 
     # If caller did not pass a custom ValidationConfig, adopt knob clamp bounds from era.
     if validation is None:
@@ -702,7 +713,16 @@ def simulate_game(
         # Preserve a single ctx dict across DEADBALL_STOP continuation segments so that
         # per-possession guards in sim_possession (e.g., _matchup_set_emitted to ensure
         # MATCHUP_SET is emitted only once per possession) remain effective.
-        pos_ctx: Optional[Dict[str, Any]] = None
+        # PERF/REALISM:
+        # Keep a reusable possession-context per (off_team_id, def_team_id) orientation.
+        #
+        # Why:
+        # - matchups (5v5 assignment map) is cached inside ctx by sim_possession.
+        # - In a normal game, offense/defense flip every possession, so a single shared ctx
+        #   would thrash and rebuild matchups almost every possession.
+        # - By caching ctx per orientation, we reuse matchups (and other tactical caches)
+        #   across possessions whenever lineups/directives haven't changed.
+        pos_ctx_by_pair: Dict[Tuple[str, str], Dict[str, Any]] = {}
 
 
         while game_state.clock_sec > 0:
@@ -846,7 +866,15 @@ def simulate_game(
             # - Reuse across DEADBALL_STOP continuation segments so per-possession flags
             #   (e.g., _matchup_set_emitted) remain effective.
             # - Overwrite segment-varying values each loop iteration.
-            if (not pos_is_continuation) or (pos_ctx is None):
+            # PERF:
+            # Use a cached ctx per (off_team_id, def_team_id) orientation.
+            # This preserves the 5v5 matchup cache (ctx['matchups_map'] etc.) across possessions
+            # whenever the same team is on offense, instead of rebuilding matchups almost every
+            # possession.
+            pair_key = (off_team_id, def_team_id)
+            pos_ctx = pos_ctx_by_pair.get(pair_key)
+
+            if pos_ctx is None:
                 ctx = {
                     "game_id": game_id,
                     "off_team_id": off_team_id,
@@ -896,6 +924,7 @@ def simulate_game(
                     # If true, sim_possession may emit MATCHUP_SET / MATCHUP_EVENT debug replay entries.
                     "debug_matchups": bool(rules.get("debug_matchups", False)),
                 }
+                pos_ctx_by_pair[pair_key] = ctx
                 pos_ctx = ctx
             else:
                 ctx = pos_ctx
@@ -926,6 +955,7 @@ def simulate_game(
                         "first_fga_shotclock_sec": pos_first_fga_sc,
                     }
                 )
+                pos_ctx_by_pair[pair_key] = ctx
                 pos_ctx = ctx
 
             # Optional override from defense tactics context (JSON-friendly dict of {DEF_KEY: weight}).

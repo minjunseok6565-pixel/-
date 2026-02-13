@@ -38,6 +38,6 @@ OFFENSE_SCHEME_MULT: Dict[str, Dict[str, Dict[str, float]]] = {
                     "PnP": {"SHOT_MID_CS":1.10, "SHOT_3_CS":1.08, "PASS_EXTRA":1.05, "RESET_HUB":1.05},
                     "ISO": {"SHOT_MID_PU":1.05, "PASS_KICKOUT":1.08, "PASS_EXTRA":1.03, "SHOT_3_OD":1.00},
                     "PnR": {"PASS_SHORTROLL":1.05}},
-    "Transition_Early": {"TransitionEarly": {"SHOT_RIM_DUNK":1.05, "SHOT_3_CS":0.98, "PASS_KICKOUT":0.95, "RESET_HUB":1.00, "FOUL_DRAW_RIM":1.05},
-                        "ISO": {"SHOT_RIM_LAYUP":1.07, "PASS_KICKOUT":1.05, "SHOT_MID_PU":0.85, "SHOT_3_OD":0.95}},
+    "Transition_Early": {"TransitionEarly": {"SHOT_RIM_DUNK":1.02, "SHOT_3_CS":0.97, "PASS_KICKOUT":0.94, "RESET_HUB":1.00, "FOUL_DRAW_RIM":1.03},
+                        "ISO": {"SHOT_RIM_LAYUP":1.05, "PASS_KICKOUT":1.04, "SHOT_MID_PU":0.85, "SHOT_3_OD":0.93}},
 }

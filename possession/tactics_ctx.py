@@ -16,12 +16,13 @@ from ..models import GameState, TeamState
 
 
 _SCHEME_HELP_BASELINE = {
-    "PackLine_GapHelp": 0.65,
     "Zone": 0.45,
     "Blitz_TrapPnR": 0.55,
     "Hedge_ShowRecover": 0.30,
+    "AtTheLevel": 0.35,
     "Drop": 0.20,
-    "ICE_SidePnR": 0.15,
+    # 1-4 switch keeps a backline anchor, so it needs more help than all-switch but still less than drop/hedge.
+    "Switch_1_4": -0.15,
     "Switch_Everything": -0.25,
 }
 

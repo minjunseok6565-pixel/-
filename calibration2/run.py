@@ -63,12 +63,26 @@ def _team_to_metrics(team_summary: Dict[str, Any]) -> Dict[str, Any]:
     keep = dict(team_summary)
     keep.pop("Players", None)
     keep.pop("PlayerBox", None)
+    # Drop verbose per-game breakdowns from the calibration2 summary JSON
+    for k in ("ShotZoneDetail", "OffActionCounts", "OutcomeCounts", "AvgFatigue"):
+        keep.pop(k, None)
     return keep
 
 
 def _combo_id(c: Combo) -> str:
     return f"{c[0]}__{c[1]}"
 
+def _round_json_numbers(x: Any, ndigits: int = 2) -> Any:
+    """Recursively round floats in JSON-able structures."""
+    if isinstance(x, float):
+        return round(x, ndigits)
+    if isinstance(x, dict):
+        return {k: _round_json_numbers(v, ndigits) for k, v in x.items()}
+    if isinstance(x, list):
+        return [_round_json_numbers(v, ndigits) for v in x]
+    if isinstance(x, tuple):
+        return [_round_json_numbers(v, ndigits) for v in x]
+    return x
 
 def run_calibration2(
     *,
@@ -268,7 +282,6 @@ def run_calibration2(
             "net_rating": net_rating,
             "net_rating_std": float(nr_std),
             "avg_team_game": combo_acc[cid].mean(),
-            "std_team_game": combo_acc[cid].std(),
         }
 
     matchups_out: Dict[str, Any] = {}
@@ -389,7 +402,8 @@ def main() -> None:
         strict_validation=args.strict,
         replay_disabled=(not args.replay),
     )
-
+ 
+    res = _round_json_numbers(res, 2)
     with open(str(args.out), "w", encoding="utf-8") as f:
         json.dump(res, f, ensure_ascii=False, indent=2)
     print(str(args.out))

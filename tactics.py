@@ -4,7 +4,6 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict
 
-
 # -------------------------
 # Tactics config
 # -------------------------
@@ -29,7 +28,6 @@ class TacticsConfig:
 
     context: Dict[str, Any] = field(default_factory=dict)
 
-
 # -------------------------
 # Defense scheme canonicalization
 # -------------------------
@@ -40,11 +38,11 @@ class TacticsConfig:
 _CANON_DEFENSE_SCHEMES = {
     "Drop",
     "Switch_Everything",
+    "Switch_1_4",
     "Hedge_ShowRecover",
     "Blitz_TrapPnR",
-    "ICE_SidePnR",
     "Zone",
-    "PackLine_GapHelp",
+    "AtTheLevel",
 }
 
 # Map a normalized alias string -> canonical defense scheme key.
@@ -59,6 +57,16 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
     "allswitch": "Switch_Everything",
     # common UI / config spellings normalize to 'allswitch'
 
+    # Switch 1-4 (1~4 switch, 5 stays in backline)
+    "switch14": "Switch_1_4",
+    "switch1to4": "Switch_1_4",
+    "switch1through4": "Switch_1_4",
+    "switch1-4": "Switch_1_4",
+    "switch1–4": "Switch_1_4",  # en-dash
+    "switch1—4": "Switch_1_4",  # em-dash
+    "switch14only": "Switch_1_4",
+
+
     # Hedge / show-recover
     "hedge": "Hedge_ShowRecover",
     "hedgeshowrecover": "Hedge_ShowRecover",
@@ -71,31 +79,32 @@ _DEFENSE_SCHEME_ALIAS_NORM = {
     "blitztrappnr": "Blitz_TrapPnR",
     "blitztrap": "Blitz_TrapPnR",
 
-    # ICE side PnR
-    "ice": "ICE_SidePnR",
-    "icesidepnr": "ICE_SidePnR",
-
     # Zone
     "zone": "Zone",
     "matchupzone": "Zone",
     "23": "Zone",
     "23zone": "Zone",
 
-    # Pack line
-    "packline": "PackLine_GapHelp",
-    "packlinegaphelp": "PackLine_GapHelp",
-    "gaphelp": "PackLine_GapHelp",
-
     # Korean / localized labels used by UI / quality tables
     "올스위치": "Switch_Everything",         # '올-스위치'
-    "아이스": "ICE_SidePnR",                 # '아이스 픽앤롤'
-    "아이스픽앤롤": "ICE_SidePnR",
+    "스위치14": "Switch_1_4",
+    "스위치1-4": "Switch_1_4",
+    "스위치1–4": "Switch_1_4",
+    "스위치1—4": "Switch_1_4",
     "23존디펜스": "Zone",                   # '2-3 존디펜스'
     "23존": "Zone",
     "헷지쇼앤리커버": "Hedge_ShowRecover",   # '헷지-쇼앤리커버'
     "블리츠트랩": "Blitz_TrapPnR",           # '블리츠-트랩'
-}
 
+    # At-the-Level (high show / contain at the level)
+    "atthelevel": "AtTheLevel",
+    "atthelevelshow": "AtTheLevel",
+    "atthelevelcontain": "AtTheLevel",
+    "atlevel": "AtTheLevel",
+    "highshow": "AtTheLevel",
+    "앳더레벨": "AtTheLevel",
+
+}
 
 def canonical_defense_scheme(value: Any) -> str:
     """Return a canonical defense scheme key.
@@ -116,12 +125,11 @@ def canonical_defense_scheme(value: Any) -> str:
         return s
 
     # Normalize: lowercase + remove spaces/underscores/hyphens
-    key = re.sub(r"[\s_\-]+", "", s.lower())
+    key = re.sub(r"[\s_\-–—]+", "", s.lower())
     mapped = _DEFENSE_SCHEME_ALIAS_NORM.get(key)
     if mapped in _CANON_DEFENSE_SCHEMES:
         return mapped
 
     return s
-
 
 

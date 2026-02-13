@@ -354,6 +354,18 @@ DEFENSE_META_PARAMS = {
             "HornsSet": 1.05,
             "ExtraPass": 1.02,
         },
+        "Switch_1_4": {
+            # 1-4 switch: still discourages simple PnR/DHO triggers, but less extreme than all-switch.
+            # Allows more drive attempts vs a backline anchor, and slightly increases post probing.
+            "PnR": 0.88,
+            "DHO": 0.95,
+            "Drive": 0.97,
+            "PostUp": 1.07,
+            "Cut": 1.05,
+            "SpotUp": 1.02,
+            "HornsSet": 1.04,
+            "ExtraPass": 1.02,
+        },
         "Hedge_ShowRecover": {
             "PnR": 0.90,
             "Drive": 0.92,
@@ -361,6 +373,16 @@ DEFENSE_META_PARAMS = {
             "ExtraPass": 1.05,
             "SpotUp": 1.04,
             "DHO": 0.95,
+        },
+        "AtTheLevel": {
+            "PnR": 0.86,
+            "DHO": 0.92,
+            "Drive": 0.92,
+            "Kickout": 1.07,
+            "ExtraPass": 1.06,
+            "SpotUp": 1.05,
+            "Cut": 1.02,
+            "HornsSet": 1.02,
         },
         "Blitz_TrapPnR": {
             "PnR": 0.82,
@@ -371,15 +393,6 @@ DEFENSE_META_PARAMS = {
             "Cut": 1.03,
             "HornsSet": 1.02,
         },
-        "ICE_SidePnR": {
-            "PnR": 0.92,
-            "Drive": 0.90,
-            "SpotUp": 1.03,
-            "Kickout": 1.05,
-            "ExtraPass": 1.03,
-            "DHO": 1.02,
-            "Cut": 1.02,
-        },
         "Zone": {
             "Drive": 0.85,
             "PostUp": 0.90,
@@ -389,16 +402,6 @@ DEFENSE_META_PARAMS = {
             "DHO": 0.95,
             "Cut": 0.92,
             "HornsSet": 1.02,
-        },
-        "PackLine_GapHelp": {
-            "Drive": 0.82,
-            "PnR": 0.95,
-            "SpotUp": 1.03,
-            "Kickout": 1.03,
-            "ExtraPass": 1.03,
-            "PostUp": 1.02,
-            "Cut": 0.95,
-            "DHO": 0.98,
         },
     },
     "defense_meta_priors_rules": {
@@ -413,6 +416,13 @@ DEFENSE_META_PARAMS = {
             {"key": "PASS_KICKOUT", "mult": 1.06},
             {"key": "PASS_EXTRA", "mult": 1.05},
         ],
+        "AtTheLevel": [
+            {"key": "PASS_SHORTROLL", "min": 0.12, "require_base_action": "PnR"},
+            {"key": "PASS_KICKOUT", "mult": 1.08, "require_base_action": "PnR"},
+            {"key": "SHOT_3_OD", "mult": 0.94, "require_base_action": "PnR"},
+            {"key": "SHOT_MID_PU", "mult": 0.94, "require_base_action": "PnR"},
+            {"key": "TO_HANDLE_LOSS", "mult": 1.04, "require_base_action": "PnR"},
+        ],
         "Blitz_TrapPnR": [
             {"key": "PASS_SHORTROLL", "min": 0.10, "require_base_action": "PnR"},
         ],
@@ -420,17 +430,14 @@ DEFENSE_META_PARAMS = {
             {"key": "SHOT_3_CS", "mult": 1.04},
             {"key": "PASS_EXTRA", "mult": 1.04},
         ],
-        "PackLine_GapHelp": [
-            {"key": "SHOT_3_CS", "mult": 1.04},
-            {"key": "PASS_KICKOUT", "mult": 1.03},
-            {"key": "TO_CHARGE", "mult": 1.06},
-            {"key": "SHOT_RIM_LAYUP", "mult": 0.95},
-            {"key": "SHOT_RIM_DUNK", "mult": 0.95},
-            {"key": "SHOT_RIM_CONTACT", "mult": 0.95},
-        ],
         "Switch_Everything": [
             {"key": "SHOT_POST", "mult": 1.08},
             {"key": "TO_HANDLE_LOSS", "mult": 1.04},
+        ],
+        "Switch_1_4": [
+            # 1-4 switch tends to invite some post probing (wings) and creates mild handle pressure.
+            {"key": "SHOT_POST", "mult": 1.05},
+            {"key": "TO_HANDLE_LOSS", "mult": 1.02},
         ],
     },
 }

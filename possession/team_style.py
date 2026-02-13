@@ -132,7 +132,7 @@ def _compute_team_style_deterministic(team: TeamState, rules: Dict[str, Any]) ->
         "DHO_Chicago": {"three_bias": 1.02},
         "Transition_Early": {"tempo_mult": 1.02},
         # More rim / post
-        "Post_Inside": {"rim_bias": 1.03, "three_bias": 0.98, "tempo_mult": 0.99},
+        "Post_InsideOut": {"rim_bias": 1.03, "three_bias": 0.98, "tempo_mult": 0.99},
     }
     mods = scheme_mods.get(scheme)
     if isinstance(mods, dict):
