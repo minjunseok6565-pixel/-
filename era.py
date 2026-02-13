@@ -374,6 +374,16 @@ DEFENSE_META_PARAMS = {
             "SpotUp": 1.04,
             "DHO": 0.95,
         },
+        "AtTheLevel": {
+            "PnR": 0.86,
+            "DHO": 0.92,
+            "Drive": 0.92,
+            "Kickout": 1.07,
+            "ExtraPass": 1.06,
+            "SpotUp": 1.05,
+            "Cut": 1.02,
+            "HornsSet": 1.02,
+        },
         "Blitz_TrapPnR": {
             "PnR": 0.82,
             "Drive": 0.90,
@@ -405,6 +415,13 @@ DEFENSE_META_PARAMS = {
         "Hedge_ShowRecover": [
             {"key": "PASS_KICKOUT", "mult": 1.06},
             {"key": "PASS_EXTRA", "mult": 1.05},
+        ],
+        "AtTheLevel": [
+            {"key": "PASS_SHORTROLL", "min": 0.12, "require_base_action": "PnR"},
+            {"key": "PASS_KICKOUT", "mult": 1.08, "require_base_action": "PnR"},
+            {"key": "SHOT_3_OD", "mult": 0.94, "require_base_action": "PnR"},
+            {"key": "SHOT_MID_PU", "mult": 0.94, "require_base_action": "PnR"},
+            {"key": "TO_HANDLE_LOSS", "mult": 1.04, "require_base_action": "PnR"},
         ],
         "Blitz_TrapPnR": [
             {"key": "PASS_SHORTROLL", "min": 0.10, "require_base_action": "PnR"},

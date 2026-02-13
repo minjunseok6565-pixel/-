@@ -15,6 +15,7 @@ SCHEME_ALIASES: Dict[str, str] = {
     "Switch_Everything": "올-스위치",
     "Switch_1_4": "스위치 1-4",
     "Hedge_ShowRecover": "헷지-쇼앤리커버",
+    "AtTheLevel": "앳-더-레벨",
     "Blitz_TrapPnR": "블리츠-트랩",
     "Zone": "2-3 존디펜스",
     "all_switch": "올-스위치",
@@ -45,4 +46,12 @@ SCHEME_ALIASES: Dict[str, str] = {
     "2-3": "2-3 존디펜스",
     "2-3 zone": "2-3 존디펜스",
     "2-3 존디펜스": "2-3 존디펜스",
+    # At-the-Level
+    "at_the_level": "앳-더-레벨",
+    "at-the-level": "앳-더-레벨",
+    "at the level": "앳-더-레벨",
+    "atthelevel": "앳-더-레벨",
+    "atlevel": "앳-더-레벨",
+    "앳-더-레벨": "앳-더-레벨",
+    "앳더레벨": "앳-더-레벨",
 }
