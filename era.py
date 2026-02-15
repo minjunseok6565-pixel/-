@@ -427,8 +427,8 @@ DEFENSE_META_PARAMS = {
             {"key": "PASS_SHORTROLL", "min": 0.10, "require_base_action": "PnR"},
         ],
         "Zone": [
-            {"key": "SHOT_3_CS", "mult": 1.04},
-            {"key": "PASS_EXTRA", "mult": 1.04},
+            {"key": "SHOT_3_CS", "mult": 1.02},
+            {"key": "PASS_EXTRA", "mult": 1.02},
         ],
         "Switch_Everything": [
             {"key": "SHOT_POST", "mult": 1.08},
