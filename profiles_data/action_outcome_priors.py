@@ -178,9 +178,9 @@ ACTION_OUTCOME_PRIORS: Dict[str, Dict[str, float]] = {
         "PASS_KICKOUT": 0.09,
         "FOUL_DRAW_RIM": 0.16,
         "FOUL_DRAW_JUMPER": 0.07,
-        "TO_HANDLE_LOSS": 0.1,
-        "TO_CHARGE": 0.017,
-        "RESET_HUB": 0.03,
+        "TO_HANDLE_LOSS": 0.14,
+        "TO_CHARGE": 0.05,
+        "RESET_HUB": 0.06,
     },
     "QuickShot": {
         "SHOT_MID_PU": 0.3,
