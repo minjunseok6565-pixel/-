@@ -257,10 +257,10 @@ MVP_RULES = {
     
     "transition_weight_mult": {
         "default": 1.0,
-        "after_drb": 1.8,
-        "after_tov": 2.5,
-        "after_steal": 2.9,
-        "after_block": 2.5,
+        "after_drb": 1.6,
+        "after_tov": 2.3,
+        "after_steal": 2.5,
+        "after_block": 2.4,
     },
  
      # --- Timeouts (dead-ball only, v1) ---
