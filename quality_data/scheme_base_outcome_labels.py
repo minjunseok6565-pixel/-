@@ -706,4 +706,4 @@ SCHEME_BASE_OUTCOME_LABELS: Dict[str, Dict[str, Dict[str, str]]] = {'2-3 존디�
  'SpotUp': {'FOUL_DRAW_JUMPER': 'Neutral',
             'SHOT_3_CS': 'weak',
             'SHOT_MID_CS': 'Neutral'},
- 'TransitionEarly': {'FOUL_DRAW_RIM': 'Neutral', 'PASS_EXTRA': 'Neutral', 'PASS_KICKOUT': 'Neutral', 'SHOT_3_CS': 'Neutral', 'SHOT_3_OD': 'Neutral', 'SHOT_RIM_CONTACT': 'Neutral', 'SHOT_RIM_DUNK': 'Neutral', 'SHOT_RIM_LAYUP': 'Neutral', 'SHOT_TOUCH_FLOATER': 'Neutral', 'TO_HANDLE_LOSS': 'Neutral'}},
+ 'TransitionEarly': {'FOUL_DRAW_RIM': 'Neutral', 'PASS_EXTRA': 'Neutral', 'PASS_KICKOUT': 'Neutral', 'SHOT_3_CS': 'Neutral', 'SHOT_3_OD': 'Neutral', 'SHOT_RIM_CONTACT': 'Neutral', 'SHOT_RIM_DUNK': 'Neutral', 'SHOT_RIM_LAYUP': 'Neutral', 'SHOT_TOUCH_FLOATER': 'Neutral', 'TO_HANDLE_LOSS': 'Neutral'}}}
