@@ -34,7 +34,7 @@ OFFENSE_SCHEME_MULT: Dict[str, Dict[str, Dict[str, float]]] = {
     "Post_InsideOut": {"PostUp": {"SHOT_POST":1.25, "PASS_KICKOUT":1.10, "FOUL_DRAW_POST":1.15, "RESET_POST_OUT":0.90},
                        "ISO": {"SHOT_RIM_CONTACT":1.10, "SHOT_MID_PU":1.08, "SHOT_3_OD":0.85, "PASS_KICKOUT":1.05},
                        "ExtraPass": {"SHOT_3_CS":1.08}},
-    "Horns_Elbow": {"HornsSet": {"RESET_HUB":0.95, "PASS_EXTRA":1.08, "SHOT_3_CS":1.08, "SHOT_MID_CS":1.06, "PASS_KICKOUT":1.10},
+    "Horns_Elbow": {"HornsSet": {"RESET_HUB":0.95, "PASS_EXTRA":1.08, "SHOT_3_CS":1.06, "SHOT_MID_CS":1.09, "SHOT_MID_PU":1.05, "PASS_KICKOUT":1.10},
                     "PnP": {"SHOT_MID_CS":1.10, "SHOT_3_CS":1.08, "PASS_EXTRA":1.05, "RESET_HUB":1.05},
                     "ISO": {"SHOT_MID_PU":1.05, "PASS_KICKOUT":1.08, "PASS_EXTRA":1.03, "SHOT_3_OD":1.00},
                     "PnR": {"PASS_SHORTROLL":1.05}},
